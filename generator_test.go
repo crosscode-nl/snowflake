@@ -53,6 +53,7 @@ func TestGenerator_NextID_WithEpoch(t *testing.T) {
 	}
 }
 
+// TestGenerator_NextID_GeneratesCorrectAmount tests the NextID method of the Generator to ensure it generates the correct amount of IDs with the default machine ID bit size
 func TestGenerator_NextID_GeneratesCorrectAmount(t *testing.T) {
 	generator, err := New(378)
 	if err != nil {
@@ -73,6 +74,7 @@ func TestGenerator_NextID_GeneratesCorrectAmount(t *testing.T) {
 	}
 }
 
+// TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits tests the NextID method of the Generator to ensure it generates the correct amount of IDs with different machine ID bit sizes
 func TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits(t *testing.T) {
 	for machineIdBits := 1; machineIdBits < 22; machineIdBits++ {
 		t.Run(fmt.Sprintf("TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits=%v", machineIdBits), func(t *testing.T) {
@@ -105,6 +107,7 @@ func TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits(t *testing.T)
 	}
 }
 
+// TestGenerator_BlockingNextID tests the BlockingNextID method of the Generator
 func TestGenerator_BlockingNextID(t *testing.T) {
 	generator, err := New(378)
 	if err != nil {
@@ -126,6 +129,8 @@ func TestGenerator_BlockingNextID(t *testing.T) {
 	}
 }
 
+// TestGenerator_BlockingNextID_UntilBlock tests the BlockingNextID method of the Generator to ensure it blocks until
+// the next ID can be generated
 func TestGenerator_BlockingNextID_UntilBlock(t *testing.T) {
 	generator, err := New(378)
 
