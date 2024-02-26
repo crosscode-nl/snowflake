@@ -37,6 +37,7 @@ func defaultTimeFunc() int64 {
 // Generator is a snowflake ID generator
 type Generator struct {
 	timeFunc                  TimeFunc
+	sleepFunc                 func()
 	machineId                 int
 	machineIdBits             int
 	epoch                     int64
@@ -58,6 +59,13 @@ func New(machineId int, opts ...Option) (*Generator, error) {
 		machineIdBits:             10,
 		machineSequenceNumberBits: 12,
 		machineId:                 machineId,
+		sleepFunc: func() {
+			nano := time.Duration(time.Now().UnixNano())
+			milli := nano.Truncate(time.Millisecond)
+			milli = milli + time.Millisecond
+			delay := milli - nano
+			time.Sleep(delay + 1*time.Nanosecond)
+		},
 	}
 
 	for _, opt := range opts {
@@ -120,10 +128,10 @@ func (g *Generator) NextID() (int64, error) {
 func (g *Generator) BlockingNextID(ctx context.Context) (int64, error) {
 	id, err := g.NextID()
 	for err == ErrOutOfSequence {
-		if ctx.Err() != nil {
+		if ctx != nil && ctx.Err() != nil {
 			return 0, ctx.Err()
 		}
-		time.Sleep(100 * time.Microsecond)
+		g.sleepFunc()
 		id, err = g.NextID()
 	}
 	return id, nil
