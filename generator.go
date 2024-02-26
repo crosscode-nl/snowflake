@@ -8,6 +8,8 @@ import (
 )
 
 var (
+	// ErrMachineIDTooSmall is returned when the machine ID is too small for the number of bits
+	ErrMachineIDTooSmall = errors.New("machine ID is too small")
 	// ErrMachineIDTooLarge is returned when the machine ID is too large for the number of bits
 	ErrMachineIDTooLarge = errors.New("machine ID is too large")
 	// ErrMachineBitsTooSmall is returned when the number of bits for the machine ID is too small
@@ -16,6 +18,12 @@ var (
 	ErrMachineBitsTooLarge = errors.New("machine ID bits is too large")
 	// ErrOutOfSequence is returned when the sequence number overflows
 	ErrOutOfSequence = errors.New("sequence number overflow")
+	// ErrTimeStampTooLarge is returned when the timestamp is too large
+	ErrTimeStampTooLarge = errors.New("timestamp is too large")
+)
+
+var (
+	maxTimestamp = int64(1<<41 - 1)
 )
 
 type Option func(*Generator)
@@ -46,17 +54,24 @@ type Generator struct {
 // Returns an error if the machineIdBits is invalid
 func New(machineId int, opts ...Option) (*Generator, error) {
 	g := &Generator{
-		timeFunc:      defaultTimeFunc,
-		machineIdBits: 10,
-		machineId:     machineId,
+		timeFunc:                  defaultTimeFunc,
+		machineIdBits:             10,
+		machineSequenceNumberBits: 12,
+		machineId:                 machineId,
 	}
 
 	for _, opt := range opts {
 		opt(g)
 	}
 
-	if g.machineId >= 1<<g.machineIdBits {
+	maxMachineId := 1<<g.machineIdBits - 1
+
+	if g.machineId > maxMachineId {
 		return nil, ErrMachineIDTooLarge
+	}
+
+	if g.machineId < 0 {
+		return nil, ErrMachineIDTooSmall
 	}
 
 	if g.machineIdBits < 1 {
@@ -82,13 +97,20 @@ func (g *Generator) NextID() (int64, error) {
 			g.machineSequenceNumber.Store(0)
 			machineSequenceNumber = 0
 		} else {
-			machineSequenceNumber = g.machineSequenceNumber.Load()
+			machineSequenceNumber = g.machineSequenceNumber.Add(1)
+			if machineSequenceNumber > g.maxMachineSequenceNumber {
+				return 0, ErrOutOfSequence
+			}
 		}
 	} else {
 		machineSequenceNumber = g.machineSequenceNumber.Add(1)
 		if machineSequenceNumber > g.maxMachineSequenceNumber {
 			return 0, ErrOutOfSequence
 		}
+	}
+
+	if currentTime > maxTimestamp {
+		return 0, ErrTimeStampTooLarge
 	}
 
 	return currentTime<<22 | int64(g.machineId)<<g.machineSequenceNumberBits | int64(machineSequenceNumber), nil
@@ -112,13 +134,6 @@ func WithMachineIdBits(size int) Option {
 	return func(generator *Generator) {
 		generator.machineIdBits = size
 		generator.machineSequenceNumberBits = 22 - size
-	}
-}
-
-// WithTimeFunc sets the time function for the generator
-func WithTimeFunc(timeFunc TimeFunc) Option {
-	return func(generator *Generator) {
-		generator.timeFunc = timeFunc
 	}
 }
 
