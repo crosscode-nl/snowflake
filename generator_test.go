@@ -104,3 +104,70 @@ func TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits(t *testing.T)
 		})
 	}
 }
+
+func TestGenerator_BlockingNextID(t *testing.T) {
+	generator, err := New(378)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	generator.timeFunc = func() int64 {
+		return 367597485448
+	}
+
+	id, err := generator.BlockingNextID(nil)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	if id != 1541815603606036480 {
+		t.Errorf("expected 1541815603606036480, got %v", id)
+	}
+}
+
+func TestGenerator_BlockingNextID_UntilBlock(t *testing.T) {
+	generator, err := New(378)
+
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	var blocked bool
+	generator.timeFunc = func() int64 {
+		return 367597485447
+	}
+	generator.sleepFunc = func() {
+		blocked = true
+		generator.timeFunc = func() int64 {
+			return 367597485448
+		}
+	}
+
+	var previousID int64
+	var count int
+	maxCount := 1 << (22 - generator.machineIdBits)
+	var id int64
+	for id, err = generator.BlockingNextID(nil); blocked == false; id, err = generator.BlockingNextID(nil) {
+		if err != nil {
+			t.Errorf("expected no error, got %v", err)
+			return
+		}
+		if previousID > id {
+			t.Errorf("expected id to be greater than previous id, got %v", id)
+		}
+		previousID = id
+		if count > maxCount {
+			break
+		}
+		count++
+	}
+
+	if count != maxCount {
+		t.Errorf("expected %v ids, got %v", maxCount, count)
+	}
+
+	if id != 1541815603606036480 {
+		t.Errorf("expected 1541815603606036480, got %v", id)
+	}
+}
