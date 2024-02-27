@@ -1,1 +1,1 @@
-module snowflakes
+module github.com/crosscode-nl/snowflakes
