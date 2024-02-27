@@ -25,20 +25,15 @@ var (
 
 type ID int64
 
-func (id ID) Time() int64 {
-	return int64(id) >> 22
+type DecodedID struct {
+	ID        int64
+	Timestamp int64
+	MachineID int64
+	Sequence  int64
 }
 
-func (id ID) MachineID() int {
-	return int((id >> 12) & (1<<10 - 1))
-}
-
-func (id ID) SequenceNumber() int {
-	return int(id & (1<<12 - 1))
-}
-
-func (id ID) String() string {
-	return fmt.Sprintf("ID{time: %d, machine: %d, sequence: %d, id: %d}", id.Time(), id.MachineID(), id.SequenceNumber(), int64(id))
+func (id DecodedID) String() string {
+	return fmt.Sprintf("ID: %d, Timestamp: %d, MachineID: %d, Sequence: %d", id.ID, id.Timestamp, id.MachineID, id.Sequence)
 }
 
 var (
@@ -113,6 +108,15 @@ func NewGenerator(machineId int, opts ...Option) (*Generator, error) {
 	g.maxMachineSequenceNumber = 1<<g.machineSequenceNumberBits - 1
 
 	return g, nil
+}
+
+func (g *Generator) DecodeID(id ID) DecodedID {
+	return DecodedID{
+		ID:        int64(id),
+		Timestamp: int64(id) >> 22,
+		MachineID: int64(id) >> g.machineSequenceNumberBits & (1<<g.machineIdBits - 1),
+		Sequence:  int64(id) & (1<<g.machineSequenceNumberBits - 1),
+	}
 }
 
 // NextID generates a new snowflake ID

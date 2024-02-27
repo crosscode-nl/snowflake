@@ -235,9 +235,9 @@ func TestGenerator_BlockingNextID_Concurrent_No_Duplicates(t *testing.T) {
 	for id := range ids {
 		if oid, ok := uniqueIDs[id.id]; ok {
 			if oid.gi == id.gi {
-				t.Errorf(">> expected unique ids, got duplicate %v, original: %v", id, oid)
+				t.Errorf(">> expected unique ids, got duplicate %v: %v, original: %v: %v <<", generator.DecodeID(id.id), id.gi, generator.DecodeID(oid.id), oid.gi)
 			}
-			t.Errorf("expected unique ids, got duplicate %v, original: %v", id, oid)
+			t.Errorf("expected unique ids, got duplicate %v: %v, original: %v: %v", generator.DecodeID(id.id), id.gi, generator.DecodeID(oid.id), oid.gi)
 		}
 		uniqueIDs[id.id] = id
 	}
