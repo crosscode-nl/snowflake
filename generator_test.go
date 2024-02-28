@@ -16,7 +16,7 @@ func TestGenerator_NextID(t *testing.T) {
 		t.Errorf("expected no error, got %v", err)
 		return
 	}
-	generator.timeFunc = func() int64 {
+	generator.timeFunc = func() uint64 {
 		return 367597485448
 	}
 
@@ -40,7 +40,7 @@ func TestGenerator_NextID_WithEpoch(t *testing.T) {
 		return
 	}
 
-	generator.timeFunc = func() int64 {
+	generator.timeFunc = func() uint64 {
 		return 1656432460105
 	}
 
@@ -57,25 +57,25 @@ func TestGenerator_NextID_WithEpoch(t *testing.T) {
 
 // TestGenerator_NextID_GeneratesCorrectAmount tests the NextID method of the Generator to ensure it generates the correct amount of IDs with the default machine ID bit size
 func TestGenerator_NextID_GeneratesCorrectAmount(t *testing.T) {
-	generator, err := NewGenerator(378)
+	generator, err := NewGenerator(0)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
 	}
 
-	generator.timeFunc = func() int64 {
-		return 0
+	generator.timeFunc = func() uint64 {
+		return 1
 	}
 
 	var previousID ID
-	var count int
+	var count uint64
 	for id, err := generator.NextID(); err == nil; id, err = generator.NextID() {
 		if previousID > id {
 			t.Errorf("expected id to be greater than previous id, got %v", id)
 		}
 		count++
 	}
-	maxCount := 1 << 12
+	maxCount := generator.sequenceMask + 1
 	if count != maxCount {
 		t.Errorf("expected %v ids, got %v", maxCount, count)
 	}
@@ -83,16 +83,16 @@ func TestGenerator_NextID_GeneratesCorrectAmount(t *testing.T) {
 
 // TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits tests the NextID method of the Generator to ensure it generates the correct amount of IDs with different machine ID bit sizes
 func TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits(t *testing.T) {
-	for machineIdBits := 1; machineIdBits < 22; machineIdBits++ {
-		maxCount := 1 << (22 - machineIdBits)
-		t.Run(fmt.Sprintf("TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits=%v_Gives_%v_ids", machineIdBits, maxCount), func(t *testing.T) {
-			generator, err := NewGenerator(0, WithMachineIdBits(machineIdBits))
+	for machineIDBits := uint64(1); machineIDBits < 22; machineIDBits++ {
+		maxCount := 1 << (22 - machineIDBits)
+		t.Run(fmt.Sprintf("TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits=%v_Gives_%v_ids", machineIDBits, maxCount), func(t *testing.T) {
+			generator, err := NewGenerator(0, WithMachineIdBits(machineIDBits))
 			if err != nil {
 				t.Errorf("expected no error, got %v", err)
 				return
 			}
-			generator.timeFunc = func() int64 {
-				return 0
+			generator.timeFunc = func() uint64 {
+				return 1
 			}
 			var previousID ID
 			var count int
@@ -122,7 +122,7 @@ func TestGenerator_BlockingNextID(t *testing.T) {
 		t.Errorf("expected no error, got %v", err)
 		return
 	}
-	generator.timeFunc = func() int64 {
+	generator.timeFunc = func() uint64 {
 		return 367597485448
 	}
 
@@ -147,19 +147,19 @@ func TestGenerator_BlockingNextID_UntilBlock(t *testing.T) {
 		return
 	}
 	var blocked bool
-	generator.timeFunc = func() int64 {
+	generator.timeFunc = func() uint64 {
 		return 367597485447
 	}
 	generator.sleepFunc = func() {
 		blocked = true
-		generator.timeFunc = func() int64 {
+		generator.timeFunc = func() uint64 {
 			return 367597485448
 		}
 	}
 
 	var previousID ID
-	var count int
-	maxCount := 1 << (22 - generator.machineIdBits)
+	var count uint64
+	maxCount := generator.sequenceMask + 1
 	var id ID
 	for id, err = generator.BlockingNextID(nil); blocked == false; id, err = generator.BlockingNextID(nil) {
 		if err != nil {
@@ -211,14 +211,9 @@ func TestGenerator_BlockingNextID_Concurrent_No_Duplicates(t *testing.T) {
 		gi := i
 		go func() {
 			for j := 0; j < 1000000; j++ {
-				var id ID
-				for {
-					var err error
-					id, err = generator.NextID()
-					if err == nil {
-						break
-					}
-					time.Sleep(10 * time.Microsecond)
+				id, err := generator.BlockingNextID(nil)
+				if err != nil {
+					panic(err)
 				}
 				ids <- data{id, gi}
 			}
@@ -242,4 +237,16 @@ func TestGenerator_BlockingNextID_Concurrent_No_Duplicates(t *testing.T) {
 		uniqueIDs[id.id] = id
 	}
 
+}
+
+func BenchmarkGenerator_NextID(b *testing.B) {
+	generator, err := NewGenerator(378)
+	if err != nil {
+		b.Errorf("expected no error, got %v", err)
+		return
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = generator.NextID()
+	}
 }
