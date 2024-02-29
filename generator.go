@@ -82,7 +82,7 @@ type Generator struct {
 	epoch          int64
 	timeFunc       TimeFunc
 	sleepFunc      func()
-	timeTravel     bool
+	drift          bool
 }
 
 // NewGenerator creates a new snowflake ID generator
@@ -159,7 +159,7 @@ func (g *Generator) NextID() (ID, error) {
 			lastTime = now
 			newCurrentID = uint64(lastTime) << timeShift
 		case sequence == g.sequenceMask:
-			if !g.timeTravel {
+			if !g.drift {
 				return 0, ErrOutOfSequence
 			}
 			newCurrentID = uint64(lastTime+1) << timeShift
@@ -200,11 +200,11 @@ func WithEpoch(epoch time.Time) Option {
 	}
 }
 
-// WithTimeTravel enables time travel for the generator
+// WithDrift enables drift to continue generating IDs when the sequence overflows
 // This allows the generator to generate IDs for times in the future
 // This increases performance but may generate IDs out of sequence
-func WithTimeTravel() Option {
+func WithDrift() Option {
 	return func(generator *Generator) {
-		generator.timeTravel = true
+		generator.drift = true
 	}
 }

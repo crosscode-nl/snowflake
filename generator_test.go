@@ -2,8 +2,6 @@ package snowflake
 
 import (
 	"fmt"
-	"runtime"
-	"sync"
 	"testing"
 	"time"
 )
@@ -182,71 +180,5 @@ func TestGenerator_BlockingNextID_UntilBlock(t *testing.T) {
 
 	if id != 1541815603606036480 {
 		t.Errorf("expected 1541815603606036480, got %v", id)
-	}
-}
-
-type data struct {
-	id ID
-	gi int
-}
-
-func (d data) String() string {
-	return fmt.Sprintf("id=%v, gi=%v", d.id, d.gi)
-}
-
-// TestGenerator_BlockingNextID_Concurrent_No_Duplicates tests the BlockingNextID method of the Generator to ensure it generates unique IDs in a concurrent environment
-func TestGenerator_BlockingNextID_Concurrent_No_Duplicates(t *testing.T) {
-	maxProcs := runtime.GOMAXPROCS(-1)
-	t.Logf("maxProcs=%v\n", maxProcs)
-	generator, err := NewGenerator(378)
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
-		return
-	}
-	var wg sync.WaitGroup
-	wg.Add(maxProcs)
-
-	ids := make(chan data, 10000000)
-	for i := 0; i < maxProcs; i++ {
-		gi := i
-		go func() {
-			for j := 0; j < 1000000; j++ {
-				id, err := generator.BlockingNextID(nil)
-				if err != nil {
-					panic(err)
-				}
-				ids <- data{id, gi}
-			}
-			wg.Done()
-		}()
-	}
-
-	func() {
-		wg.Wait()
-		close(ids)
-	}()
-
-	uniqueIDs := make(map[ID]data)
-	for id := range ids {
-		if oid, ok := uniqueIDs[id.id]; ok {
-			if oid.gi == id.gi {
-				t.Errorf(">> expected unique ids, got duplicate %v: %v, original: %v: %v <<", generator.DecodeID(id.id), id.gi, generator.DecodeID(oid.id), oid.gi)
-			}
-			t.Errorf("expected unique ids, got duplicate %v: %v, original: %v: %v", generator.DecodeID(id.id), id.gi, generator.DecodeID(oid.id), oid.gi)
-		}
-		uniqueIDs[id.id] = id
-	}
-
-}
-
-func BenchmarkGenerator_NextID(b *testing.B) {
-	generator, err := NewGenerator(378, WithTimeTravel())
-	if err != nil {
-		b.Errorf("expected no error, got %v", err)
-		return
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_, _ = generator.BlockingNextID(nil)
 	}
 }

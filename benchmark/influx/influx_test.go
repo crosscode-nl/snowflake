@@ -1,13 +1,23 @@
-package others
+package influx
 
 import (
+	"fmt"
 	"github.com/influxdata/influxdb/pkg/snowflake"
 	"runtime"
 	"sync"
 	"testing"
 )
 
-func TestInfluxGoSnowflake(t *testing.T) {
+type data struct {
+	id uint64
+	gi int
+}
+
+func (d data) String() string {
+	return fmt.Sprintf("id=%v, gi=%v", d.id, d.gi)
+}
+
+func TestInflux(t *testing.T) {
 	gen := snowflake.New(1)
 	maxProcs := runtime.GOMAXPROCS(-1)
 	t.Logf("maxProcs=%v\n", maxProcs)

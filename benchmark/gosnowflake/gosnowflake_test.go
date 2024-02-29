@@ -1,4 +1,4 @@
-package others
+package gosnowflake
 
 import (
 	"fmt"
