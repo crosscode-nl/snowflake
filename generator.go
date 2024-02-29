@@ -1,4 +1,4 @@
-package snowflakes
+package snowflake
 
 import (
 	"context"
