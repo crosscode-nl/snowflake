@@ -240,13 +240,13 @@ func TestGenerator_BlockingNextID_Concurrent_No_Duplicates(t *testing.T) {
 }
 
 func BenchmarkGenerator_NextID(b *testing.B) {
-	generator, err := NewGenerator(378)
+	generator, err := NewGenerator(378, WithTimeTravel())
 	if err != nil {
 		b.Errorf("expected no error, got %v", err)
 		return
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = generator.NextID()
+		_, _ = generator.BlockingNextID(nil)
 	}
 }
