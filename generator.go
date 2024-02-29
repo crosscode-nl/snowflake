@@ -2,6 +2,8 @@ package snowflakes
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"sync/atomic"
@@ -19,16 +21,34 @@ var (
 	ErrMachineBitsTooLarge = errors.New("machine ID bits is too large")
 	// ErrOutOfSequence is returned when the sequence number overflows
 	ErrOutOfSequence = errors.New("sequence number overflow")
-	// ErrTimeStampTooLarge is returned when the timestamp is too large
-	ErrTimeStampTooLarge = errors.New("timestamp is too large")
 )
 
 const (
 	timeShift = 22
 )
 
+// ID is a snowflake ID
 type ID uint64
 
+func (id ID) String() string {
+	return fmt.Sprintf("%x", uint64(id))
+}
+
+func (id ID) LowerHexString() string {
+	return fmt.Sprintf("%x", uint64(id))
+}
+
+func (id ID) UpperHexString() string {
+	return fmt.Sprintf("%X", uint64(id))
+}
+
+func (id ID) Base64String() string {
+	var b [8]byte
+	binary.LittleEndian.PutUint64(b[:], uint64(id))
+	return base64.StdEncoding.EncodeToString(b[:])
+}
+
+// DecodedID is a snowflake ID decoded into its components
 type DecodedID struct {
 	ID        uint64
 	Timestamp uint64
@@ -36,12 +56,15 @@ type DecodedID struct {
 	Sequence  uint64
 }
 
+// String returns a string representation of the decoded ID
 func (id DecodedID) String() string {
 	return fmt.Sprintf("ID: %d, Timestamp: %d, MachineID: %d, Sequence: %d", id.ID, id.Timestamp, id.MachineID, id.Sequence)
 }
 
+// Option is a function that configures the generator
 type Option func(*Generator)
 
+// TimeFunc is a function that returns the current time in milliseconds
 type TimeFunc func() uint64
 
 func defaultTimeFunc() uint64 {
@@ -111,6 +134,7 @@ func NewGenerator(machineID uint64, opts ...Option) (*Generator, error) {
 	return g, nil
 }
 
+// DecodeID decodes a snowflake ID into its components
 func (g *Generator) DecodeID(id ID) DecodedID {
 	return DecodedID{
 		ID:        uint64(id),
