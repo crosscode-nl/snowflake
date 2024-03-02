@@ -244,6 +244,7 @@ func TestGenerator_BlockingNextID_UntilBlock(t *testing.T) {
 	}
 }
 
+// TestNewGenerator_Errors tests the NewGenerator function for errors
 func TestNewGenerator_Errors(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -280,6 +281,7 @@ func TestNewGenerator_Errors(t *testing.T) {
 	}
 }
 
+// TestDefaultTimeFunc tests the defaultTimeFunc function
 func TestDefaultTimeFunc(t *testing.T) {
 	now := defaultTimeFunc()
 	if now == 0 {

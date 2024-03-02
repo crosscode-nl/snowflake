@@ -2,6 +2,7 @@ package snowflake
 
 import "testing"
 
+// TestDecodedID_String tests the DecodedID String method
 func TestDecodedID_String(t *testing.T) {
 	tests := []struct {
 		name string
@@ -28,6 +29,7 @@ func TestDecodedID_String(t *testing.T) {
 	}
 }
 
+// TestGenerator_DecodeID tests the Generator DecodeID method
 func TestGenerator_DecodeID(t *testing.T) {
 	tests := []struct {
 		name             string

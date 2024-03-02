@@ -12,7 +12,7 @@ type ID uint64
 type Alphabet func() [64]byte
 
 func (id ID) String() string {
-	return id.UpperHexString()
+	return id.Influx64String()
 }
 
 func (id ID) LowerHexString() string {

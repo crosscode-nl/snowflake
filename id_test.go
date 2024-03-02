@@ -7,6 +7,7 @@ import (
 	"testing"
 )
 
+// BenchmarkID_Base64String benchmarks the Base64String method of the ID type
 func BenchmarkID_Base64String(b *testing.B) {
 	id := ID(0x0000000000000001)
 	for i := 0; i < b.N; i++ {
@@ -14,6 +15,7 @@ func BenchmarkID_Base64String(b *testing.B) {
 	}
 }
 
+// BenchmarkID_Base64StringCustom benchmarks the Base64StringCustom method of the ID type
 func BenchmarkID_Base64InfluxString(b *testing.B) {
 	id := ID(0x0000000000000001)
 	for i := 0; i < b.N; i++ {
@@ -21,6 +23,7 @@ func BenchmarkID_Base64InfluxString(b *testing.B) {
 	}
 }
 
+// BenchmarkID_LowerHexString benchmarks the LowerHexString method of the ID type
 func BenchmarkID_LowerHexString(b *testing.B) {
 	id := ID(0x0000000000000001)
 	for i := 0; i < b.N; i++ {
@@ -28,6 +31,7 @@ func BenchmarkID_LowerHexString(b *testing.B) {
 	}
 }
 
+// BenchmarkID_String benchmarks the String method of the ID type
 func BenchmarkID_UpperHexString(b *testing.B) {
 	id := ID(0x0000000000000001)
 	for i := 0; i < b.N; i++ {
@@ -35,6 +39,7 @@ func BenchmarkID_UpperHexString(b *testing.B) {
 	}
 }
 
+// ExampleID_Base64String is an example of the ID Base64String method
 func ExampleID_Base64String() {
 	id := ID(0x0000000000000001)
 	fmt.Println(id.Base64String())
@@ -45,6 +50,7 @@ func ExampleID_Base64String() {
 	// //////////8
 }
 
+// ExampleID_Base64StringCustom_urlAlphabet is an example of the ID Base64StringCustom method using the url alphabet
 func ExampleID_Base64StringCustom_urlAlphabet() {
 	id := ID(0x0000000000000001)
 	fmt.Println(id.Base64StringCustom(base64.UrlAlphabet))
@@ -55,6 +61,7 @@ func ExampleID_Base64StringCustom_urlAlphabet() {
 	// __________8
 }
 
+// ExampleID_Base64StringCustom_mimeAlphabet is an example of the ID Base64StringCustom method using the mime alphabet
 func ExampleID_Base64StringCustom_mimeAlphabet() {
 	id := ID(0x0000000000000001)
 	fmt.Println(id.Base64StringCustom(base64.MimeAlphabet))
@@ -65,6 +72,7 @@ func ExampleID_Base64StringCustom_mimeAlphabet() {
 	// ,,,,,,,,,,8
 }
 
+// ExampleID_Influx64String is an example of the ID Influx64String method
 func ExampleID_Influx64String() {
 	id := ID(0x0000000000000001)
 	fmt.Println(id.Influx64String())
@@ -75,6 +83,7 @@ func ExampleID_Influx64String() {
 	// F~~~~~~~~~~
 }
 
+// ExampleID_Influx64StringCustom is an example of the ID Influx64StringCustom method using the url alphabet
 func ExampleID_Influx64StringCustom() {
 	id := ID(0x0000000000000001)
 	fmt.Println(id.Influx64StringCustom(base64.UrlAlphabet))
@@ -86,6 +95,7 @@ func ExampleID_Influx64StringCustom() {
 
 }
 
+// ExampleID_LowerHexString is an example of the ID LowerHexString method
 func ExampleID_LowerHexString() {
 	id := ID(0x0000000000000001)
 	fmt.Println(id.LowerHexString())
@@ -101,6 +111,7 @@ func ExampleID_LowerHexString() {
 	// ffffffffffffffff
 }
 
+// ExampleID_String is an example of the ID String method
 func ExampleID_String() {
 	id := ID(0x0000000000000001)
 	fmt.Println(id.String())
@@ -111,12 +122,13 @@ func ExampleID_String() {
 	// FFFFFFFFFFFFFFFF
 }
 
+// ExampleID_UpperHexString is an example of the ID UpperHexString method
 func ExampleID_UpperHexString() {
 	id := ID(0x0000000000000001)
 	fmt.Println(id.UpperHexString())
 	id = ID(math.MaxUint64)
 	fmt.Println(id.UpperHexString())
 	// Output:
-	// 0000000000000001
-	// FFFFFFFFFFFFFFFF
+	// 00000000001
+	// F~~~~~~~~~~
 }
