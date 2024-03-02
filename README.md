@@ -1,6 +1,6 @@
 # Snowflake
 
-Snowflake is a dependency free implementation of the Twitter Snowflake ID generator in Go. Twitter Snowflake is a 
+Snowflake is a dependency free implementation of the Snowflake ID algorithm in Go. Snowflake ID is a 
 unique ID generator that is distributed and scalable. See: https://en.wikipedia.org/wiki/Snowflake_ID
 
 It is used to generate unique IDs for distributed systems. The ID is a 64-bit integer that is composed of a timestamp, 
