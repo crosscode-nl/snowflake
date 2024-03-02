@@ -1,9 +1,5 @@
 package base64
 
-import (
-	"encoding/binary"
-)
-
 func Alphabet() [64]byte {
 	return [64]byte{
 		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
@@ -40,9 +36,12 @@ func MimeAlphabet() [64]byte {
 // Encode encodes a number into a base64 string
 func Encode(s *[11]byte, n uint64, d func() [64]byte) {
 	var digits = d()
-	var b [8]byte
-	binary.NativeEndian.PutUint64(b[:], n)
-	ln := binary.BigEndian.Uint64(b[:])
+
+	var ln uint64
+
+	for i := 0; i < 8; i++ {
+		ln, n = ln<<8|n&0xFF, n>>8
+	}
 
 	for i := 0; i <= 10; i++ {
 		s[i], ln = digits[ln>>58], ln<<6

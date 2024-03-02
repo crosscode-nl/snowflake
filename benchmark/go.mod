@@ -1,6 +1,6 @@
 module github.com/crosscode-nl/snowflake/benchmark
 
-go 1.21.0
+go 1.19
 
 require (
 	github.com/bwmarrin/snowflake v0.3.0
