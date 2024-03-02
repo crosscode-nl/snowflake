@@ -118,8 +118,8 @@ func ExampleID_String() {
 	id = ID(math.MaxUint64)
 	fmt.Println(id.String())
 	// Output:
-	// 0000000000000001
-	// FFFFFFFFFFFFFFFF
+	// 00000000001
+	// F~~~~~~~~~~
 }
 
 // ExampleID_UpperHexString is an example of the ID UpperHexString method
@@ -129,6 +129,6 @@ func ExampleID_UpperHexString() {
 	id = ID(math.MaxUint64)
 	fmt.Println(id.UpperHexString())
 	// Output:
-	// 00000000001
-	// F~~~~~~~~~~
+	// 0000000000000001
+	// FFFFFFFFFFFFFFFF
 }
