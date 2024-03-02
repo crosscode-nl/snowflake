@@ -73,3 +73,15 @@ func BenchmarkGenerator_NextID(b *testing.B) {
 		_, _ = generator.BlockingNextID(nil)
 	}
 }
+
+func BenchmarkGenerator_NextID_NoDrift(b *testing.B) {
+	generator, err := snowflake.NewGenerator(378)
+	if err != nil {
+		b.Errorf("expected no error, got %v", err)
+		return
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = generator.BlockingNextID(nil)
+	}
+}

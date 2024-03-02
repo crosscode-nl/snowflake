@@ -1,8 +1,7 @@
 # Snowflake
 
-Snowflake is an implementation of the Twitter Snowflake ID generator in Go. 
-
-Twitter Snowflake is a unique ID generator that is distributed and scalable. 
+Snowflake is an implementation of the Twitter Snowflake ID generator in Go. Twitter Snowflake is a unique ID generator 
+that is distributed and scalable. See: https://en.wikipedia.org/wiki/Snowflake_ID
 
 It is used to generate unique IDs for distributed systems. The ID is a 64-bit integer that is composed of a timestamp, 
 a machine ID, and a sequence number. The timestamp is the number of milliseconds since a custom epoch. The machine ID 
@@ -34,12 +33,12 @@ very flexible, allowing for different epochs and bit sizes per instance in a sin
 
 ### Performance
 
-| Package                           | Performance | Blocking            | Synchronization | Coverage |
-|-----------------------------------|-------------|---------------------|-----------------|----------|
-| github.com/crosscode-nl/snowflake | 42.60 ns/op | optional, sleep     | CAS, unlimited  | 100%     |
-| github.com/influxdata/snowflake   | 43.10 ns/op | no                  | CAS, 100x, bug  | 88.9%    |
-| github.com/bwmarrin/snowflake     | 244.1 ns/op | yes, busy loop, bug | Mutex           | 92.9%    |
-| github.com/godruoyi/go-snowflake  | 244.2 ns/op | yes, busy loop      | CAS, unlimited  | 91.4%    |
+| Package                           | Performance      | Blocking            | Synchronization | Coverage |
+|-----------------------------------|------------------|---------------------|-----------------|----------|
+| github.com/crosscode-nl/snowflake | ~43 / ~244 ns/op | optional, sleep     | CAS, unlimited  | 100%     |
+| github.com/influxdata/snowflake   | ~43 ns/op        | no                  | CAS, 100x, bug  | 88.9%    |
+| github.com/bwmarrin/snowflake     | ~244 ns/op       | yes, busy loop, bug | Mutex           | 92.9%    |
+| github.com/godruoyi/go-snowflake  | ~244 ns/op       | yes, busy loop      | CAS, unlimited  | 91.4%    |
 
 The biggest performance comes from allowing drift or not. When drift is allowed, the generator can generate IDs 
 without blocking. Our implementation supports both blocking and non-blocking modes. The blocking mode will give
