@@ -11,22 +11,22 @@ incremented when multiple IDs are generated within the same millisecond.
 A 64 bits ID can be represented as an 11 character string in base64 encoding. This is a very efficient way to store the 
 ID in a string format in XML, JSON, or a database, although I would store it as a binary uint64 if possible.
 
-This package can be a livesaver if you need to generate unique IDs in a distributed system, otherwise you would have to
+This module can be a livesaver if you need to generate unique IDs in a distributed system, otherwise you would have to
 use a database or service to generate unique IDs, which would introduce latency, a bottleneck and a single point 
 of failure.
 
-All the packages I investigated are amazing, and I would not hold back to use any of them if you do not want to use 
-this package. I think the Influx implementation is the best alternative, because it is fast. If you cannot use it 
+All the modules I investigated are amazing, and I would not hold back to use any of them if you do not want to use 
+this module. I think the Influx implementation is the best alternative, because it is fast. If you cannot use it 
 because of the potential out of order ids or the lack of flexibility, then you could use bwmarin/snowflake or 
 godruoyi/go-snowflake.
 
 ## Motivation
 
 I decided to make this implementation because I was not satisfied with the existing implementations, because I like
-a different software design, want more flexibility and performance. I also wanted to have a package that is easy to use 
+a different software design, want more flexibility and performance. I also wanted to have a module that is easy to use 
 and has a good test coverage.
 
-I think this package delivers on these points. It is easy to use, has a good test coverage, and is very fast. It is also
+I think this module delivers on these points. It is easy to use, has a good test coverage, and is very fast. It is also
 very flexible, allowing for different epochs and bit sizes per instance in a single application.
 
 ## Quick start
@@ -73,20 +73,20 @@ func main() {
 Make sure to only create one generator per machine id. If you create multiple generators with the same machine id,
 you will get duplicate IDs.
 
-For an example on how to run snowflake in compatibility mode with the other packages, see: [example/compatibility](example/compatibility/main.go)
+For an example on how to run snowflake in compatibility mode with the other modules, see: [example/compatibility](example/compatibility/main.go)
 
 ## Comparison
 
 ### Dependencies
 
-All investigated packages have zero dependencies outside the standard library, just like this package.
+All investigated modules have zero dependencies outside the standard library, just like this module.
 
-A low or zero dependency count is a good thing. It means the package is easy to use and has a low risk of breaking
+A low or zero dependency count is a good thing. It means the module is easy to use and has a low risk of breaking
 because of a dependency update. The chance of a security issue (CVE) is lower.
 
 ### Performance
 
-| Package                           | Performance      | IDs/s    | Blocking            | Synchronization | Coverage   |
+| Module                            | Performance      | IDs/s    | Blocking            | Synchronization | Coverage   |
 |-----------------------------------|------------------|----------|---------------------|-----------------|------------|
 | github.com/crosscode-nl/snowflake | ~43 / ~244 ns/op | 23M / 4M | optional, sleep     | CAS, unlimited  | 100%       |
 | github.com/influxdata/snowflake   | ~43 ns/op        | 23M      | no                  | CAS, 100x, bug  | 88.9%      |
@@ -128,7 +128,7 @@ exhausted.**
 
 ### Generator features
 
-| Package                           | Drift | Custom Epoch      | Change bit size   | Timestamp | Default epoch        |
+| Module                            | Drift | Custom Epoch      | Change bit size   | Timestamp | Default epoch        |
 |-----------------------------------|-------|-------------------|-------------------|-----------|----------------------|
 | github.com/crosscode-nl/snowflake | yes   | yes, per instance | yes, per instance | 42 bits   | 2024-03-01 00:00:00Z |
 | github.com/influxdata/snowflake   | yes   | no                | no                | 42 bits   | 2017-04-09 00:00:00Z | 
@@ -151,14 +151,14 @@ Using 42 bits for the timestamp allows for a maximum of 138 years of IDs since t
 Using 41 bits for the timestamp allows for a maximum of 69 years of IDs since the epoch.
 
 Having the possibility to set the epoch to the start of the app initial build date allows a longer period of id then
-when using the unix epoch. None of the packages do this, but Influx does not allow to set the epoch. However, its default 
+when using the unix epoch. None of the modules do this, but Influx does not allow to set the epoch. However, its default 
 epoch is: 1491696000000, which is 2017-04-09 00:00:00.000 UTC.
 
-**NB: If you switch between these implementations, make sure to set the epoch to the same value of the original package.**
+**NB: If you switch between these implementations, make sure to set the epoch to the same value of the original module.**
 
 ### ID features
 
-| Package                           | ID      | Encoding                                                                     | Default          | Decode     |
+| Module                            | ID      | Encoding                                                                     | Default          | Decode     |
 |-----------------------------------|---------|------------------------------------------------------------------------------|------------------|------------|
 | github.com/crosscode-nl/snowflake | uint64  | Base64(std,url,mime,influx), Influx64(std,url,mime,influx), Hex(Upper,Lower) | Hex(Upper)       | yes        |
 | github.com/influxdata/snowflake   | uint64  | Influx64(influx)                                                             | Influx64(influx) | no         |
@@ -167,7 +167,7 @@ epoch is: 1491696000000, which is 2017-04-09 00:00:00.000 UTC.
 
 The encoding features are for convenience only, although our implementations are optimized for speed.
 
-Decode means that the package has a function to decode the ID into a struct with the timestamp, machineID, and sequence. 
+Decode means that the module has a function to decode the ID into a struct with the timestamp, machineID, and sequence. 
 bwmarin/snowflake has a deprecated function to decode the ID, but is still works.
 
 The encoding options are nice if you need to convert the ID to a string. The Influx64 encoding is Base64 encoding which
@@ -183,4 +183,4 @@ your strings and change the padding character to a different character.*
 
 ## License 
 
-This package is licensed under the MIT license. See: [LICENSE](LICENSE)
+This module is licensed under the MIT license. See: [LICENSE](LICENSE)
