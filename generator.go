@@ -2,8 +2,6 @@ package snowflake
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"sync/atomic"
@@ -26,27 +24,6 @@ var (
 const (
 	timeShift = 22
 )
-
-// ID is a snowflake ID
-type ID uint64
-
-func (id ID) String() string {
-	return fmt.Sprintf("%x", uint64(id))
-}
-
-func (id ID) LowerHexString() string {
-	return fmt.Sprintf("%x", uint64(id))
-}
-
-func (id ID) UpperHexString() string {
-	return fmt.Sprintf("%X", uint64(id))
-}
-
-func (id ID) Base64String() string {
-	var b [8]byte
-	binary.LittleEndian.PutUint64(b[:], uint64(id))
-	return base64.StdEncoding.EncodeToString(b[:])
-}
 
 // DecodedID is a snowflake ID decoded into its components
 type DecodedID struct {
