@@ -18,7 +18,7 @@ jobs:
         go-version: ['1.19', 'oldstable','stable']
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Go ${{ matrix.go_version }}
+    - name: Set up Go ${{ matrix.go-version }}
       uses: actions/setup-go@v4
       with:
         go-version: ${{ go_version }}
