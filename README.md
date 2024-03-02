@@ -17,7 +17,7 @@ of failure.
 
 All the packages I investigated are amazing, and I would not hold back to use any of them if you do not want to use 
 this package. I think the Influx implementation is the best alternative, because it is fast. If you cannot use it 
-because of the potential out of order ids or the lack of flexibility, then you could bwmarin/snowflake or 
+because of the potential out of order ids or the lack of flexibility, then you could use bwmarin/snowflake or 
 godruoyi/go-snowflake.
 
 ## Motivation
@@ -34,12 +34,7 @@ very flexible, allowing for different epochs and bit sizes per instance in a sin
 
 ### Dependencies
 
-| Package                           | Dependencies |
-|-----------------------------------|--------------|
-| github.com/crosscode-nl/snowflake | 0            | 
-| github.com/influxdata/snowflake   | ~43 ns/op    | 
-| github.com/bwmarrin/snowflake     | ~244 ns/op   | 
-| github.com/godruoyi/go-snowflake  | ~244 ns/op   |
+All investigated packages have zero dependencies outside the standard library, just like this package.
 
 A low or zero dependency count is a good thing. It means the package is easy to use and has a low risk of breaking
 because of a dependency update. The chance of a security issue (CVE) is lower.
