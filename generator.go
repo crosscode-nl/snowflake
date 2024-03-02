@@ -3,14 +3,11 @@ package snowflake
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sync/atomic"
 	"time"
 )
 
 var (
-	// ErrMachineIDTooSmall is returned when the machine ID is too small for the number of bits
-	ErrMachineIDTooSmall = errors.New("machine ID is too small")
 	// ErrMachineIDTooLarge is returned when the machine ID is too large for the number of bits
 	ErrMachineIDTooLarge = errors.New("machine ID is too large")
 	// ErrMachineBitsTooSmall is returned when the number of bits for the machine ID is too small
@@ -24,19 +21,6 @@ var (
 const (
 	timeShift = 22
 )
-
-// DecodedID is a snowflake ID decoded into its components
-type DecodedID struct {
-	ID        uint64
-	Timestamp uint64
-	MachineID uint64
-	Sequence  uint64
-}
-
-// String returns a string representation of the decoded ID
-func (id DecodedID) String() string {
-	return fmt.Sprintf("ID: %d, Timestamp: %d, MachineID: %d, Sequence: %d", id.ID, id.Timestamp, id.MachineID, id.Sequence)
-}
 
 // Option is a function that configures the generator
 type Option func(*Generator)
@@ -86,15 +70,7 @@ func NewGenerator(machineID uint64, opts ...Option) (*Generator, error) {
 		opt(g)
 	}
 
-	maxMachineId := uint64(1<<g.machineIDBits - 1)
-
-	if g.machineID > maxMachineId {
-		return nil, ErrMachineIDTooLarge
-	}
-
-	if g.machineID < 0 {
-		return nil, ErrMachineIDTooSmall
-	}
+	maxMachineID := uint64(1<<g.machineIDBits - 1)
 
 	if g.machineIDBits < 1 {
 		return nil, ErrMachineBitsTooSmall
@@ -104,21 +80,15 @@ func NewGenerator(machineID uint64, opts ...Option) (*Generator, error) {
 		return nil, ErrMachineBitsTooLarge
 	}
 
-	g.machineIDMask = maxMachineId
+	if g.machineID > maxMachineID {
+		return nil, ErrMachineIDTooLarge
+	}
+	
+	g.machineIDMask = maxMachineID
 	g.sequenceMask = 1<<(timeShift-g.machineIDBits) - 1
 	g.machineIDShift = timeShift - g.machineIDBits
 
 	return g, nil
-}
-
-// DecodeID decodes a snowflake ID into its components
-func (g *Generator) DecodeID(id ID) DecodedID {
-	return DecodedID{
-		ID:        uint64(id),
-		Timestamp: uint64(id) >> timeShift,
-		MachineID: uint64(id) >> g.machineIDShift & g.machineIDMask,
-		Sequence:  uint64(id) & g.sequenceMask,
-	}
 }
 
 // NextID generates a new snowflake ID
@@ -153,7 +123,7 @@ func (g *Generator) NextID() (ID, error) {
 // BlockingNextID generates a new snowflake ID, blocking until the next ID can be generated
 func (g *Generator) BlockingNextID(ctx context.Context) (ID, error) {
 	id, err := g.NextID()
-	for err == ErrOutOfSequence {
+	for errors.Is(err, ErrOutOfSequence) {
 		if ctx != nil && ctx.Err() != nil {
 			return 0, ctx.Err()
 		}
@@ -163,8 +133,8 @@ func (g *Generator) BlockingNextID(ctx context.Context) (ID, error) {
 	return id, nil
 }
 
-// WithMachineIdBits sets the number of bits to use for the machine ID
-func WithMachineIdBits(size uint64) Option {
+// WithMachineIDBits sets the number of bits to use for the machine ID
+func WithMachineIDBits(size uint64) Option {
 	return func(generator *Generator) {
 		generator.machineIDBits = size
 	}

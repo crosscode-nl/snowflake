@@ -1,6 +1,8 @@
 package snowflake
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -84,7 +86,7 @@ func TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits(t *testing.T)
 	for machineIDBits := uint64(1); machineIDBits < 22; machineIDBits++ {
 		maxCount := 1 << (22 - machineIDBits)
 		t.Run(fmt.Sprintf("TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits=%v_Gives_%v_ids", machineIDBits, maxCount), func(t *testing.T) {
-			generator, err := NewGenerator(0, WithMachineIdBits(machineIDBits))
+			generator, err := NewGenerator(0, WithMachineIDBits(machineIDBits))
 			if err != nil {
 				t.Errorf("expected no error, got %v", err)
 				return
@@ -114,6 +116,56 @@ func TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits(t *testing.T)
 }
 
 // TestGenerator_BlockingNextID tests the BlockingNextID method of the Generator
+func TestGenerator_BlockingNextID_ErrorWhenContextIsCanceledAndBlockingWouldOccurr(t *testing.T) {
+	generator, err := NewGenerator(378)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	generator.timeFunc = func() uint64 {
+		return 367597485448
+	}
+	maxCount := 1 << 12
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	for i := 1; i < maxCount+2; i++ {
+		_, err = generator.BlockingNextID(ctx)
+	}
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("expected context canceled, got %v", err)
+		return
+	}
+}
+
+// TestGenerator_BlockingNextID tests the BlockingNextID method of the Generator
+func TestGenerator_BlockingNextID_BlockedUntilNextId(t *testing.T) {
+	generator, err := NewGenerator(378)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	maxCount := 1 << 12
+	var id ID
+	var previousID ID
+	for i := 0; i <= maxCount; i++ {
+		previousID = id
+		if previousID>>22 != id>>22 { // start over, time has changed
+			i = 0
+		}
+		id, err = generator.BlockingNextID(nil)
+	}
+
+	dId := generator.DecodeID(id)
+	dPreviousId := generator.DecodeID(previousID)
+	if dId.Timestamp <= dPreviousId.Timestamp {
+		t.Errorf("expected id to be greater than previous id %v, got %v", dPreviousId.Timestamp, dId.Timestamp)
+	}
+	if dId.Sequence != 0 {
+		t.Errorf("expected sequence to be 0, got %v", dId.Sequence)
+	}
+}
+
+// TestGenerator_BlockingNextID tests the BlockingNextID with cancel context
 func TestGenerator_BlockingNextID(t *testing.T) {
 	generator, err := NewGenerator(378)
 	if err != nil {
@@ -180,5 +232,53 @@ func TestGenerator_BlockingNextID_UntilBlock(t *testing.T) {
 
 	if id != 1541815603606036480 {
 		t.Errorf("expected 1541815603606036480, got %v", id)
+	}
+}
+
+func TestNewGenerator_Errors(t *testing.T) {
+	tests := []struct {
+		name        string
+		machineID   uint64
+		machineBits uint64
+		want        error
+	}{
+		{
+			name:        "Test NewGenerator with machine bits too small",
+			machineID:   1,
+			machineBits: 0,
+			want:        ErrMachineBitsTooSmall,
+		},
+		{
+			name:        "Test NewGenerator with machine bits too large",
+			machineID:   1,
+			machineBits: 22,
+			want:        ErrMachineBitsTooLarge,
+		},
+		{
+			name:        "Test NewGenerator with machine ID too large",
+			machineID:   1 << 10,
+			machineBits: 10,
+			want:        ErrMachineIDTooLarge,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewGenerator(tt.machineID, WithMachineIDBits(tt.machineBits))
+			if err != tt.want {
+				t.Errorf("expected %v, got %v", tt.want, err)
+			}
+		})
+	}
+}
+
+func TestDefaultTimeFunc(t *testing.T) {
+	now := defaultTimeFunc()
+	if now == 0 {
+		t.Errorf("expected non zero time, got %v", now)
+	}
+	time.Sleep(2 * time.Millisecond)
+	now2 := defaultTimeFunc()
+	if now2 <= now {
+		t.Errorf("expected time to have advanced, got %v", now2)
 	}
 }
