@@ -1,7 +1,7 @@
 # Snowflake
 
-Snowflake is an implementation of the Twitter Snowflake ID generator in Go. Twitter Snowflake is a unique ID generator 
-that is distributed and scalable. See: https://en.wikipedia.org/wiki/Snowflake_ID
+Snowflake is a dependency free implementation of the Twitter Snowflake ID generator in Go. Twitter Snowflake is a 
+unique ID generator that is distributed and scalable. See: https://en.wikipedia.org/wiki/Snowflake_ID
 
 It is used to generate unique IDs for distributed systems. The ID is a 64-bit integer that is composed of a timestamp, 
 a machine ID, and a sequence number. The timestamp is the number of milliseconds since a custom epoch. The machine ID 
@@ -30,6 +30,19 @@ I think this package delivers on these points. It is easy to use, has a good tes
 very flexible, allowing for different epochs and bit sizes per instance in a single application.
 
 ## Comparison
+
+
+### Dependencies
+
+| Package                           | Dependencies |
+|-----------------------------------|--------------|
+| github.com/crosscode-nl/snowflake | 0            | 
+| github.com/influxdata/snowflake   | ~43 ns/op    | 
+| github.com/bwmarrin/snowflake     | ~244 ns/op   | 
+| github.com/godruoyi/go-snowflake  | ~244 ns/op   |
+
+A low or zero dependency count is a good thing. It means the package is easy to use and has a low risk of breaking
+because of a dependency update. The chance of a security issue (CVE) is lower.
 
 ### Performance
 
@@ -75,12 +88,12 @@ exhausted.**
 
 ### Generator features
 
-| Package                           | Drift | Custom Epoch      | Change bit size   | Timestamp    | Default epoch        |
-|-----------------------------------|-------|-------------------|-------------------|--------------|----------------------|
-| github.com/crosscode-nl/snowflake | yes   | yes, per instance | yes, per instance | 42 bits      | 2024-03-01 00:00:00Z |
-| github.com/influxdata/snowflake   | yes   | no                | no                | 42 bits      | 2017-04-09 00:00:00Z | 
-| github.com/bwmarrin/snowflake     | no    | yes, global       | yes, global       | 42 bits, bug | 2010-11-04 01:42:54Z | 
-| github.com/godruoyi/go-snowflake  | no    | yes, global       | yes, global       | 41 bits      | 2008-11-10 23:00:00Z | 
+| Package                           | Drift | Custom Epoch      | Change bit size   | Timestamp | Default epoch        |
+|-----------------------------------|-------|-------------------|-------------------|-----------|----------------------|
+| github.com/crosscode-nl/snowflake | yes   | yes, per instance | yes, per instance | 42 bits   | 2024-03-01 00:00:00Z |
+| github.com/influxdata/snowflake   | yes   | no                | no                | 42 bits   | 2017-04-09 00:00:00Z | 
+| github.com/bwmarrin/snowflake     | no    | yes, global       | yes, global       | 41 bits   | 2010-11-04 01:42:54Z | 
+| github.com/godruoyi/go-snowflake  | no    | yes, global       | yes, global       | 41 bits   | 2008-11-10 23:00:00Z | 
 
 We allow multiple instances of the generator to have different epochs and bit sizes. This allows for more flexibility
 in the use of the generator, particularly in an environment where multiple systems use different snowflake configurations.
@@ -91,25 +104,26 @@ The bwmarrin and godruoyi implementations are configurable via package global va
 configuration is possible for the entire application. It looks like bwmarin made a start to make the configuration
 per instance, but it is not finished.
 
-All instances return 42 bits for the timestamp, except for yhe godruoyi/go-snowflake implementation that uses 41 bits for the timestamp.
+Twitter uses 41 bits for the timestamp, which allows for a maximum of 69 years of IDs since the epoch, but we allow
+for 42 bits. This allows for a maximum of 138 years of IDs since the epoch. Influx also uses 42 bits for the timestamp.
 
 Using 42 bits for the timestamp allows for a maximum of 138 years of IDs since the epoch.
 Using 41 bits for the timestamp allows for a maximum of 69 years of IDs since the epoch.
 
 Having the possibility to set the epoch to the start of the app initial build date allows a longer period of id then
-when using the unix epoch. None of the packages do this, but Influx does not allow to set the epoch. However, its default epoch is: 1491696000000, 
-which is 2017-04-09 00:00:00.000 UTC.
+when using the unix epoch. None of the packages do this, but Influx does not allow to set the epoch. However, its default 
+epoch is: 1491696000000, which is 2017-04-09 00:00:00.000 UTC.
 
 **NB: If you switch between these implementations, make sure to set the epoch to the same value of the original package.**
 
 ### ID features
 
-| Package                           | ID         | Encoding                                                                     | Default          | Decode     |
-|-----------------------------------|------------|------------------------------------------------------------------------------|------------------|------------|
-| github.com/crosscode-nl/snowflake | uint64     | Base64(std,url,mime,influx), Influx64(std,url,mime,influx), Hex(Upper,Lower) | Hex(Upper)       | yes        |
-| github.com/influxdata/snowflake   | uint64     | Influx64(influx)                                                             | Influx64(influx) | no         |
-| github.com/bwmarrin/snowflake     | int64, bug | Decimal, Base2, Base32, Base36, Base58, Base64                               | Decimal          | deprecated | 
-| github.com/godruoyi/go-snowflake  | uint64     | None                                                                         | None             | yes        | 
+| Package                           | ID      | Encoding                                                                     | Default          | Decode     |
+|-----------------------------------|---------|------------------------------------------------------------------------------|------------------|------------|
+| github.com/crosscode-nl/snowflake | uint64  | Base64(std,url,mime,influx), Influx64(std,url,mime,influx), Hex(Upper,Lower) | Hex(Upper)       | yes        |
+| github.com/influxdata/snowflake   | uint64  | Influx64(influx)                                                             | Influx64(influx) | no         |
+| github.com/bwmarrin/snowflake     | int64   | Decimal, Base2, Base32, Base36, Base58, Base64                               | Decimal          | deprecated | 
+| github.com/godruoyi/go-snowflake  | uint64  | None                                                                         | None             | yes        | 
 
 The encoding features are for convenience only, although our implementations are optimized for speed.
 
@@ -126,8 +140,6 @@ The most efficient option is to store the ID as a binary uint64 (8 bytes).
 *TIP: If your system uses strings, and you want to use a different epoch, then you could switch to an encoding 
 with a different length if your system can handle larger or shorter ID strings. You could also choose to add padding to
 your strings and change the padding character to a different character.*
-
-**BUG: bwmarin/snowflake uses a signed int64, which will overflow after 69 years**
 
 ## License 
 

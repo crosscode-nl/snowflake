@@ -128,7 +128,7 @@ func TestGenerator_BlockingNextID_ErrorWhenContextIsCanceledAndBlockingWouldOccu
 	maxCount := 1 << 12
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	for i := 1; i < maxCount+2; i++ {
+	for i := 1; i <= maxCount; i++ {
 		_, err = generator.BlockingNextID(ctx)
 	}
 	if !errors.Is(err, context.Canceled) {
@@ -144,15 +144,24 @@ func TestGenerator_BlockingNextID_BlockedUntilNextId(t *testing.T) {
 		t.Errorf("expected no error, got %v", err)
 		return
 	}
+	var ts uint64
+	generator.timeFunc = func() uint64 {
+		return ts
+	}
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		ts = 1
+	}()
 	maxCount := 1 << 12
 	var id ID
 	var previousID ID
-	for i := 0; i <= maxCount; i++ {
-		previousID = id
-		if previousID>>22 != id>>22 { // start over, time has changed
-			i = 0
-		}
+	for i := 0; i < maxCount; i++ {
 		id, err = generator.BlockingNextID(nil)
+	}
+
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
 	}
 
 	dId := generator.DecodeID(id)
