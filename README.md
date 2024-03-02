@@ -33,12 +33,15 @@ very flexible, allowing for different epochs and bit sizes per instance in a sin
 
 ### Performance
 
-| Package                           | Performance      | Blocking            | Synchronization | Coverage |
-|-----------------------------------|------------------|---------------------|-----------------|----------|
-| github.com/crosscode-nl/snowflake | ~43 / ~244 ns/op | optional, sleep     | CAS, unlimited  | 100%     |
-| github.com/influxdata/snowflake   | ~43 ns/op        | no                  | CAS, 100x, bug  | 88.9%    |
-| github.com/bwmarrin/snowflake     | ~244 ns/op       | yes, busy loop, bug | Mutex           | 92.9%    |
-| github.com/godruoyi/go-snowflake  | ~244 ns/op       | yes, busy loop      | CAS, unlimited  | 91.4%    |
+| Package                           | Performance      | IDs/s    | Blocking            | Synchronization | Coverage   |
+|-----------------------------------|------------------|----------|---------------------|-----------------|------------|
+| github.com/crosscode-nl/snowflake | ~43 / ~244 ns/op | 23M / 4M | optional, sleep     | CAS, unlimited  | 100%       |
+| github.com/influxdata/snowflake   | ~43 ns/op        | 23M      | no                  | CAS, 100x, bug  | 88.9%      |
+| github.com/bwmarrin/snowflake     | ~244 ns/op       | 4M       | yes, busy loop, bug | Mutex           | 92.9%      |
+| github.com/godruoyi/go-snowflake  | ~244 ns/op       | 4M       | yes, busy loop      | CAS, unlimited  | 91.4%      |
+
+With 244 ns/op you can generate 4 million IDs per second. With 43 ns/op you can generate 23 million IDs per second per 
+instance. 
 
 The biggest performance comes from allowing drift or not. When drift is allowed, the generator can generate IDs 
 without blocking. Our implementation supports both blocking and non-blocking modes. The blocking mode will give
@@ -48,10 +51,27 @@ A thing I noticed is that it does not seem to matter a lot if the implementation
 'lock-free' CAS loop. Supporting and allowing drift is the most important factor for performance on peak load. If you
 do not care that the ids are out of order, you can use the non-blocking mode and have the best performance.
 
+Also, changing the machine ID bits size will change the performance. When it becomes smaller the sequence becomes larger
+, we will have less drift, and more IDs can be generated per millisecond in blocking mode. 
+
+For example, changing machine ID bits from 10 to 9 will change the performance in blocking mode. Consider:
+
+| Bits | Performance  | IDs/s |
+|------|--------------|-------|
+| 6    | ~44 ns/op    | 22M   |
+| 7    | ~44 ns/op    | 22M   |
+| 9    | ~122 ns/op   | 8M    |
+| 10   | ~244 ns/op   | 4M    |
+| 11   | ~488 ns/op   | 2M    |
+| 16   | ~15613 ns/op | 64K   |
+
 **BUG: The influxdata/snowflake implementation has a bug with the CAS loop, which potentially could cause
 a larger drift than necessary. It is very unlikely to experience this bug though.**
 
-**BUG: The bwmarrin/snowflake could potentially cause an extra temporary millisecond when it blocks when the sequence is exhausted.**
+**BUG: The bwmarrin/snowflake could potentially cause an extra temporary millisecond when it blocks when the sequence is 
+exhausted.**
+
+**NOTE: All benchmarks are done on a 16GB 2020 M1 Mac Mini.**
 
 ### Generator features
 
