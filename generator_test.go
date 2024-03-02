@@ -11,7 +11,7 @@ import (
 // TestGenerator_NextID tests the NextID method of the Generator
 // It uses a test vector based on the first Tweet on Twitter
 func TestGenerator_NextID(t *testing.T) {
-	generator, err := NewGenerator(378)
+	generator, err := NewGenerator(378, WithEpoch(time.UnixMilli(0)))
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -57,7 +57,7 @@ func TestGenerator_NextID_WithEpoch(t *testing.T) {
 
 // TestGenerator_NextID_GeneratesCorrectAmount tests the NextID method of the Generator to ensure it generates the correct amount of IDs with the default machine ID bit size
 func TestGenerator_NextID_GeneratesCorrectAmount(t *testing.T) {
-	generator, err := NewGenerator(0)
+	generator, err := NewGenerator(0, WithEpoch(time.UnixMilli(0)))
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -86,7 +86,7 @@ func TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits(t *testing.T)
 	for machineIDBits := uint64(1); machineIDBits < 22; machineIDBits++ {
 		maxCount := 1 << (22 - machineIDBits)
 		t.Run(fmt.Sprintf("TestGenerator_NextID_GeneratesCorrectAmount_WithMachineIdBits=%v_Gives_%v_ids", machineIDBits, maxCount), func(t *testing.T) {
-			generator, err := NewGenerator(0, WithMachineIDBits(machineIDBits))
+			generator, err := NewGenerator(0, WithMachineIDBits(machineIDBits), WithEpoch(time.UnixMilli(0)))
 			if err != nil {
 				t.Errorf("expected no error, got %v", err)
 				return
@@ -139,7 +139,7 @@ func TestGenerator_BlockingNextID_ErrorWhenContextIsCanceledAndBlockingWouldOccu
 
 // TestGenerator_BlockingNextID tests the BlockingNextID method of the Generator
 func TestGenerator_BlockingNextID_BlockedUntilNextId(t *testing.T) {
-	generator, err := NewGenerator(378)
+	generator, err := NewGenerator(378, WithEpoch(time.UnixMilli(0)))
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -167,7 +167,7 @@ func TestGenerator_BlockingNextID_BlockedUntilNextId(t *testing.T) {
 
 // TestGenerator_BlockingNextID tests the BlockingNextID with cancel context
 func TestGenerator_BlockingNextID(t *testing.T) {
-	generator, err := NewGenerator(378)
+	generator, err := NewGenerator(378, WithEpoch(time.UnixMilli(0)))
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -190,7 +190,7 @@ func TestGenerator_BlockingNextID(t *testing.T) {
 // TestGenerator_BlockingNextID_UntilBlock tests the BlockingNextID method of the Generator to ensure it blocks until
 // the next ID can be generated
 func TestGenerator_BlockingNextID_UntilBlock(t *testing.T) {
-	generator, err := NewGenerator(378)
+	generator, err := NewGenerator(378, WithEpoch(time.UnixMilli(0)))
 
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -264,7 +264,7 @@ func TestNewGenerator_Errors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := NewGenerator(tt.machineID, WithMachineIDBits(tt.machineBits))
-			if err != tt.want {
+			if !errors.Is(err, tt.want) {
 				t.Errorf("expected %v, got %v", tt.want, err)
 			}
 		})

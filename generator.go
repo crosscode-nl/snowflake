@@ -64,6 +64,7 @@ func NewGenerator(machineID uint64, opts ...Option) (*Generator, error) {
 			delay := milli - nano
 			time.Sleep(delay + 1*time.Nanosecond)
 		},
+		epoch: 1709247600000,
 	}
 
 	for _, opt := range opts {
@@ -83,7 +84,7 @@ func NewGenerator(machineID uint64, opts ...Option) (*Generator, error) {
 	if g.machineID > maxMachineID {
 		return nil, ErrMachineIDTooLarge
 	}
-	
+
 	g.machineIDMask = maxMachineID
 	g.sequenceMask = 1<<(timeShift-g.machineIDBits) - 1
 	g.machineIDShift = timeShift - g.machineIDBits

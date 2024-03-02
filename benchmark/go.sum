@@ -2,6 +2,10 @@ github.com/bwmarrin/snowflake v0.3.0 h1:xm67bEhkKh6ij1790JB83OujPR5CzNe8QuQqAgIS
 github.com/bwmarrin/snowflake v0.3.0/go.mod h1:NdZxfVWX+oR6y2K0o6qAYv6gIOP9rjG0/E9WsDpxqwE=
 github.com/crosscode-nl/snowflake v0.0.0-20240229213757-defccc8d9536 h1:jK8E+oNb5oQtULMp2sI0Xk+XL9Bqm8CeXzC8oYKikqw=
 github.com/crosscode-nl/snowflake v0.0.0-20240229213757-defccc8d9536/go.mod h1:Ss7gNVq5tT4+yhyHLZO0GpFqv5AV1BAzsFBp7NX1Ftg=
+github.com/crosscode-nl/snowflake v0.0.0-20240229225857-f1adddb2193b h1:1VFr/fGFsosAEBx16WD+c50Y3ez9u78iLK/cCA5LPiA=
+github.com/crosscode-nl/snowflake v0.0.0-20240229225857-f1adddb2193b/go.mod h1:Ss7gNVq5tT4+yhyHLZO0GpFqv5AV1BAzsFBp7NX1Ftg=
+github.com/crosscode-nl/snowflake v0.0.0-20240302112956-9a93eb9b2c58 h1:gkY19dOoWSrTzFWVwsnm/ZqhP8oz5i6EBYlgZymdnhA=
+github.com/crosscode-nl/snowflake v0.0.0-20240302112956-9a93eb9b2c58/go.mod h1:bStbYuKXxa+5jlUgSy2ftnnOKoC9WlwSVfMaxtXoL4s=
 github.com/godruoyi/go-snowflake v0.0.2 h1:rN9imTkrUJ5ZjuwTOi7kTGQFEZSUI3pwPMzAb7uitk4=
 github.com/godruoyi/go-snowflake v0.0.2/go.mod h1:6JXMZzmleLpSK9pYpg4LXTcAz54mdYXTeXUvVks17+4=
 github.com/influxdata/influxdb v1.11.5 h1:+em5VOl6lhAZubXj5o6SobCwvrRs3XDlBx/MUI4schI=
