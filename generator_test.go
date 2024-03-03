@@ -156,7 +156,7 @@ func TestGenerator_BlockingNextID_BlockedUntilNextId(t *testing.T) {
 	var id ID
 	var previousID ID
 	for i := 0; i < maxCount; i++ {
-		id, err = generator.BlockingNextID(nil)
+		id, err = generator.BlockingNextID(context.TODO())
 	}
 
 	if err != nil {
@@ -185,7 +185,7 @@ func TestGenerator_BlockingNextID(t *testing.T) {
 		return 367597485448
 	}
 
-	id, err := generator.BlockingNextID(nil)
+	id, err := generator.BlockingNextID(context.TODO())
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -220,7 +220,7 @@ func TestGenerator_BlockingNextID_UntilBlock(t *testing.T) {
 	var count uint64
 	maxCount := generator.sequenceMask + 1
 	var id ID
-	for id, err = generator.BlockingNextID(nil); blocked == false; id, err = generator.BlockingNextID(nil) {
+	for id, err = generator.BlockingNextID(context.TODO()); blocked == false; id, err = generator.BlockingNextID(nil) {
 		if err != nil {
 			t.Errorf("expected no error, got %v", err)
 			return
