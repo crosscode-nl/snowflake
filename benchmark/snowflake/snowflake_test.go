@@ -64,7 +64,7 @@ func TestGenerator_BlockingNextID_Concurrent_No_Duplicates(t *testing.T) {
 }
 
 func BenchmarkGenerator_NextID(b *testing.B) {
-	generator, err := snowflake.NewGenerator(378, snowflake.WithDrift(1*time.Second))
+	generator, err := snowflake.NewGenerator(378, snowflake.WithDriftNoWait(1*time.Hour))
 	if err != nil {
 		b.Errorf("expected no error, got %v", err)
 		return
