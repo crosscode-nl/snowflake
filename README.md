@@ -121,6 +121,10 @@ For example, changing machine ID bits from 10 to 9 will change the performance i
 | 11   | ~488 ns/op   | 2M    |
 | 16   | ~15613 ns/op | 64K   |
 
+**WARNING: The influxdata/snowflake drift implementation has a bug that can cause collisions, as it does not have
+a limit on the amount of drift. We mitigate this by providing a maximum drift and wait that amount of time on generator
+creations to prevent ID collisions on a restart of the application.**
+
 **BUG: The influxdata/snowflake implementation has a bug with the CAS loop, which potentially could cause
 a larger drift than necessary. It is very unlikely to experience this bug though.**
 
