@@ -16,6 +16,8 @@ var (
 	ErrMachineBitsTooLarge = errors.New("machine ID bits is too large")
 	// ErrOutOfSequence is returned when the sequence number overflows
 	ErrOutOfSequence = errors.New("sequence number overflow")
+	// ErrTimeBeforeEpoch is returned when the time is before the epoch
+	ErrTimeBeforeEpoch = errors.New("time is before epoch")
 )
 
 const (
@@ -44,6 +46,7 @@ type Generator struct {
 	timeFunc       TimeFunc
 	sleepFunc      func()
 	drift          bool
+	duration       time.Duration
 }
 
 // NewGenerator creates a new snowflake ID generator
@@ -97,20 +100,27 @@ func (g *Generator) NextID() (ID, error) {
 
 	now := int64(g.timeFunc()) - g.epoch
 
+	if now < 0 {
+		return 0, ErrTimeBeforeEpoch
+	}
+
 	for {
 		currentID := g.currentID.Load()
 		newCurrentID := currentID
-		lastTime := int64(currentID >> timeShift)
+		lastTime := currentID >> timeShift
 		sequence := currentID & g.sequenceMask
 		switch {
-		case lastTime < now:
-			lastTime = now
-			newCurrentID = uint64(lastTime) << timeShift
+		case lastTime < uint64(now):
+			lastTime = uint64(now)
+			newCurrentID = lastTime << timeShift
 		case sequence == g.sequenceMask:
 			if !g.drift {
 				return 0, ErrOutOfSequence
 			}
-			newCurrentID = uint64(lastTime+1) << timeShift
+			if uint64(now)-lastTime >= uint64(g.duration.Milliseconds()) {
+				return 0, ErrOutOfSequence
+			}
+			newCurrentID = (lastTime + 1) << timeShift
 		default:
 			newCurrentID++
 		}
@@ -151,8 +161,10 @@ func WithEpoch(epoch time.Time) Option {
 // WithDrift enables drift to continue generating IDs when the sequence overflows
 // This allows the generator to generate IDs for times in the future
 // This increases performance but may generate IDs out of sequence
-func WithDrift() Option {
+func WithDrift(duration time.Duration) Option {
 	return func(generator *Generator) {
 		generator.drift = true
+		generator.duration = duration
+		time.Sleep(duration)
 	}
 }

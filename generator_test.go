@@ -123,7 +123,7 @@ func TestGenerator_BlockingNextID_ErrorWhenContextIsCanceledAndBlockingWouldOccu
 		return
 	}
 	generator.timeFunc = func() uint64 {
-		return 367597485448
+		return uint64(generator.epoch)
 	}
 	maxCount := 1 << 12
 	ctx, cancel := context.WithCancel(context.Background())

@@ -1,6 +1,9 @@
 package snowflake
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 // TestDecodedID_String tests the DecodedID String method
 func TestDecodedID_String(t *testing.T) {
@@ -43,7 +46,7 @@ func TestGenerator_DecodeID(t *testing.T) {
 			name:             "Test Generator DecodeID method",
 			machineID:        2,
 			machineIDBitSize: 10,
-			timestamp:        0,
+			timestamp:        1709247600000,
 			sequence:         1,
 			want: DecodedID{
 				ID:        8193,
@@ -56,7 +59,7 @@ func TestGenerator_DecodeID(t *testing.T) {
 			name:             "Test Generator DecodeID method with drift",
 			machineID:        2,
 			machineIDBitSize: 10,
-			timestamp:        0,
+			timestamp:        1709247600000,
 			sequence:         1 << 12,
 			want: DecodedID{
 				ID:        4202496,
@@ -68,7 +71,7 @@ func TestGenerator_DecodeID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g, err := NewGenerator(tt.machineID, WithMachineIDBits(tt.machineIDBitSize), WithDrift())
+			g, err := NewGenerator(tt.machineID, WithMachineIDBits(tt.machineIDBitSize), WithDrift(1*time.Second))
 			if err != nil {
 				t.Errorf("expected no error, got %v", err)
 				return
