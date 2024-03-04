@@ -161,10 +161,23 @@ func WithEpoch(epoch time.Time) Option {
 // WithDrift enables drift to continue generating IDs when the sequence overflows
 // This allows the generator to generate IDs for times in the future
 // This increases performance but may generate IDs out of sequence
+// This also sleeps for the duration in this constructor, to prevent ID collisions on a restart of the application.
 func WithDrift(duration time.Duration) Option {
 	return func(generator *Generator) {
 		generator.drift = true
 		generator.duration = duration
 		time.Sleep(duration)
+	}
+}
+
+// WithDriftNoWait enables drift to continue generating IDs when the sequence overflows
+// This allows the generator to generate IDs for times in the future
+// This increases performance but may generate IDs out of sequence
+// This does not sleep for the duration in this constructor, to prevent ID collisions on a restart of the application.
+// WARNING: This may cause ID collisions on a restart of the application. Use WithDrift instead.
+func WithDriftNoWait(duration time.Duration) Option {
+	return func(generator *Generator) {
+		generator.drift = true
+		generator.duration = duration
 	}
 }
