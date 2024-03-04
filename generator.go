@@ -117,7 +117,7 @@ func (g *Generator) NextID() (ID, error) {
 			if !g.drift {
 				return 0, ErrOutOfSequence
 			}
-			if uint64(now)-lastTime >= uint64(g.duration.Milliseconds()) {
+			if lastTime-uint64(now) >= uint64(g.duration.Milliseconds()) {
 				return 0, ErrOutOfSequence
 			}
 			newCurrentID = (lastTime + 1) << timeShift

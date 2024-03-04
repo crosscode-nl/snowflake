@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"sync"
 	"testing"
+	"time"
 )
 
 type data struct {
@@ -63,7 +64,7 @@ func TestGenerator_BlockingNextID_Concurrent_No_Duplicates(t *testing.T) {
 }
 
 func BenchmarkGenerator_NextID(b *testing.B) {
-	generator, err := snowflake.NewGenerator(378, snowflake.WithDrift())
+	generator, err := snowflake.NewGenerator(378, snowflake.WithDrift(1*time.Second))
 	if err != nil {
 		b.Errorf("expected no error, got %v", err)
 		return

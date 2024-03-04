@@ -52,10 +52,12 @@ func godruoyi_snowflake() {
 }
 
 // influx_snowflake is a compatibility test for godruoyi/snowflake
+// a small deviation is expected when comparing the two snowflake implementations, because we limit the drift to
+// a configurable amount of time, while influx does not.
 func influx_snowflake() {
 	n := sf3.New(1) // influx new
 
-	g, err := sf.NewGenerator(1, sf.WithDrift(), sf.WithEpoch(time.UnixMilli(1491696000000))) // snowflake new
+	g, err := sf.NewGenerator(1, sf.WithDrift(1*time.Second), sf.WithEpoch(time.UnixMilli(1491696000000))) // snowflake new
 	if err != nil {
 		panic(err)
 	}
