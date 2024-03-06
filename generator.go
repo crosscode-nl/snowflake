@@ -34,6 +34,20 @@ func defaultTimeFunc() uint64 {
 	return uint64(time.Now().UnixMilli())
 }
 
+func defaultSleepFunc() {
+	nano := time.Duration(time.Now().UnixNano())
+	milli := nano.Truncate(time.Millisecond)
+	milli = milli + time.Millisecond
+	delay := milli - nano
+	time.Sleep(delay + 1*time.Nanosecond)
+}
+
+func exactSleepFunc() {
+	currentMilli := time.Now().UnixMilli()
+	for currentMilli == time.Now().UnixMilli() {
+	}
+}
+
 // Generator is a snowflake ID generator
 type Generator struct {
 	currentID      atomic.Uint64
@@ -60,14 +74,8 @@ func NewGenerator(machineID uint64, opts ...Option) (*Generator, error) {
 		timeFunc:      defaultTimeFunc,
 		machineIDBits: 10,
 		machineID:     machineID,
-		sleepFunc: func() {
-			nano := time.Duration(time.Now().UnixNano())
-			milli := nano.Truncate(time.Millisecond)
-			milli = milli + time.Millisecond
-			delay := milli - nano
-			time.Sleep(delay + 1*time.Nanosecond)
-		},
-		epoch: 1709247600000,
+		sleepFunc:     defaultSleepFunc,
+		epoch:         1709247600000,
 	}
 
 	for _, opt := range opts {
@@ -179,5 +187,13 @@ func WithDriftNoWait(duration time.Duration) Option {
 	return func(generator *Generator) {
 		generator.drift = true
 		generator.duration = duration
+	}
+}
+
+// WithExactSleep sets the sleep function to sleep until the next millisecond
+// This implements a busy wait loop to sleep until the next millisecond
+func WithExactSleep() Option {
+	return func(generator *Generator) {
+		generator.sleepFunc = exactSleepFunc
 	}
 }

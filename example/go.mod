@@ -7,4 +7,5 @@ require (
 	github.com/crosscode-nl/snowflake v0.3.0
 	github.com/godruoyi/go-snowflake v0.0.2
 	github.com/influxdata/influxdb v1.11.5
+	github.com/montanaflynn/stats v0.7.1
 )
