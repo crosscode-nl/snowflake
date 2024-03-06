@@ -76,7 +76,7 @@ func main() {
 Make sure to only create one generator per machine id. If you create multiple generators with the same machine id,
 you will get duplicate IDs.
 
-For an example on how to run snowflake in compatibility mode with the other modules, see: [example/compatibility](example/compatibility/main.go)
+For an example on how to run snowflake in compatibility mode with the other modules, see: [snowflake-extras:example/compatibility](https://github.com/crosscode-nl/snowflake-extras/blob/main/example/recommended/main.go)
 
 ## Comparison
 

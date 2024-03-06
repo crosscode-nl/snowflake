@@ -293,3 +293,99 @@ func TestDefaultTimeFunc(t *testing.T) {
 		t.Errorf("expected time to have advanced, got %v", now2)
 	}
 }
+
+func TestWithExactSleep(t *testing.T) {
+	generator, err := NewGenerator(378, WithEpoch(time.UnixMilli(0)), WithExactSleep())
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	// The default sleeping implementation is not exact, it deviates thousands of nanoseconds
+	// from the expected time. WithExactSleep should perform much better and deviate less than 1us
+	for i := 0; i < 10; i++ {
+		generator.sleepFunc()
+		now := time.Now().UnixNano()
+		now2 := time.Now().UnixMilli()
+		difference := now - now2*1000*1000
+		if difference > 1000 {
+			t.Errorf("expected difference to be less than 1us, got %v", difference)
+		}
+	}
+}
+
+func TestWithDrift(t *testing.T) {
+	now := time.Now()
+	generator, err := NewGenerator(378, WithEpoch(time.UnixMilli(0)), WithDrift(200*time.Millisecond))
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	if !generator.drift {
+		t.Errorf("expected drift to be true, got %v", generator.drift)
+	}
+	if generator.duration != 200*time.Millisecond {
+		t.Errorf("expected duration to be 200ms, got %v", generator.duration)
+	}
+	if time.Now().Sub(now) < 200*time.Millisecond {
+		t.Errorf("expected time to have advanced by at least 200ms, got %v", time.Now().Sub(now))
+	}
+}
+
+func TestWithDriftNoWait(t *testing.T) {
+	now := time.Now()
+	generator, err := NewGenerator(378, WithEpoch(time.UnixMilli(0)), WithDriftNoWait(200*time.Millisecond))
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	if !generator.drift {
+		t.Errorf("expected drift to be true, got %v", generator.drift)
+	}
+	if generator.duration != 200*time.Millisecond {
+		t.Errorf("expected duration to be 200ms, got %v", generator.duration)
+	}
+	if time.Now().Sub(now) > time.Millisecond {
+		t.Errorf("expected time to have advanced by at least less than a millisecond, got %v", time.Now().Sub(now))
+	}
+}
+
+func TestGenerator_NextID_InvalidEpoch(t *testing.T) {
+	generator, err := NewGenerator(378, WithEpoch(time.Now().Add(time.Hour)))
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	id, err := generator.NextID()
+	if !errors.Is(err, ErrTimeBeforeEpoch) {
+		t.Errorf("expected ErrTimeBeforeEpoch, got %v", err)
+	}
+	if id != 0 {
+		t.Errorf("expected 0, got %v", id)
+	}
+}
+
+func TestNewGenerator_NextId_WithDrif2ms_Returns3x(t *testing.T) {
+	generator, err := NewGenerator(0, WithEpoch(time.UnixMilli(0)), WithDrift(2*time.Millisecond))
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	generator.timeFunc = func() uint64 {
+		return 1
+	}
+
+	var previousID ID
+	var count uint64
+	for id, err := generator.NextID(); err == nil; id, err = generator.NextID() {
+		if previousID > id {
+			t.Errorf("expected id to be greater than previous id, got %v", id)
+		}
+		count++
+	}
+	maxCount := (generator.sequenceMask + 1) * 3
+	if count != maxCount {
+		t.Errorf("expected %v ids, got %v", maxCount, count)
+	}
+}
