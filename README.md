@@ -1,3 +1,5 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/crosscode-nl/snowflake.svg)](https://pkg.go.dev/github.com/crosscode-nl/snowflake)
+
 # Snowflake
 
 Snowflake is a dependency free implementation of the Snowflake ID algorithm in Go. Snowflake ID is a 
