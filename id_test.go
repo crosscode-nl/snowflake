@@ -2,7 +2,7 @@ package snowflake
 
 import (
 	"fmt"
-	"github.com/crosscode-nl/snowflake/encoder/base64"
+	"github.com/crosscode-nl/snowflake/internal/encoder/base64"
 	"math"
 	"testing"
 )

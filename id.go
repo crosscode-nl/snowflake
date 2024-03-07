@@ -1,9 +1,9 @@
 package snowflake
 
 import (
-	"github.com/crosscode-nl/snowflake/encoder/base64"
-	"github.com/crosscode-nl/snowflake/encoder/hex"
-	"github.com/crosscode-nl/snowflake/encoder/influx"
+	"github.com/crosscode-nl/snowflake/internal/encoder/base64"
+	"github.com/crosscode-nl/snowflake/internal/encoder/hex"
+	"github.com/crosscode-nl/snowflake/internal/encoder/influx"
 )
 
 // ID is a snowflake ID
