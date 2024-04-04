@@ -1,3 +1,5 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/crosscode-nl/snowflake.svg)](https://pkg.go.dev/github.com/crosscode-nl/snowflake)
+
 # Snowflake
 
 Snowflake is a dependency free implementation of the Snowflake ID algorithm in Go. Snowflake ID is a 
@@ -11,7 +13,7 @@ incremented when multiple IDs are generated within the same millisecond.
 A 64 bits ID can be represented as an 11 character string in base64 encoding. This is a very efficient way to store the 
 ID in a string format in XML, JSON, or a database, although I would store it as a binary uint64 if possible.
 
-This module can be a livesaver if you need to generate unique IDs in a distributed system, otherwise you would have to
+This module can be a lifesaver if you need to generate unique IDs in a distributed system, otherwise you would have to
 use a database or service to generate unique IDs, which would introduce latency, a bottleneck and a single point 
 of failure.
 
@@ -85,7 +87,8 @@ For an example on how to run snowflake in compatibility mode with the other modu
 All investigated modules have zero dependencies outside the standard library, just like this module.
 
 A low or zero dependency count is a good thing. It means the module is easy to use and has a low risk of breaking
-because of a dependency update. The chance of a security issue (CVE) is lower.
+because of a dependency update. The chance of a security issue (CVE) is lower. A supply chain attack is also less 
+likely, as per example: https://nvd.nist.gov/vuln/detail/CVE-2024-3094
 
 ### Performance
 

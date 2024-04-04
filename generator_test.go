@@ -301,16 +301,26 @@ func TestWithExactSleep(t *testing.T) {
 		return
 	}
 
+	outliers := 0
+
 	// The default sleeping implementation is not exact, it deviates thousands of nanoseconds
 	// from the expected time. WithExactSleep should perform much better and deviate less than 1us
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 1000; i++ {
 		generator.sleepFunc()
 		now := time.Now().UnixNano()
 		now2 := time.Now().UnixMilli()
-		difference := now - now2*1000*1000
-		if difference > 1000 {
-			t.Errorf("expected difference to be less than 1us, got %v", difference)
+		difference := now - now2*1e6
+		if difference > 1e6 {
+			t.Errorf("expected difference to be less than 1ms, got %v", difference)
 		}
+		if difference > 1e5 {
+			outliers++
+
+		}
+	}
+
+	if outliers > 10 {
+		t.Errorf("expected less then 10 outliers with a 100us < time taken < 1ms, got %v", outliers)
 	}
 }
 
