@@ -87,7 +87,8 @@ For an example on how to run snowflake in compatibility mode with the other modu
 All investigated modules have zero dependencies outside the standard library, just like this module.
 
 A low or zero dependency count is a good thing. It means the module is easy to use and has a low risk of breaking
-because of a dependency update. The chance of a security issue (CVE) is lower.
+because of a dependency update. The chance of a security issue (CVE) is lower. A supply chain attack is also less 
+likely, as per example: https://nvd.nist.gov/vuln/detail/CVE-2024-3094
 
 ### Performance
 
